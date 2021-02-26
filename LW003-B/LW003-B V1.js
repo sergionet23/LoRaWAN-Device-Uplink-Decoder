@@ -6,15 +6,11 @@
 //Suitable platforms：TTN
 function Decoder(bytes, port) {
   var decoded = {};
-  var a;
-  var c;
-  var d;
+  var array;
   var b;
-  var e;
-  var f;
-  var g;
-  var h;
-  if (bytes[0] == 1 )
+  array = base64_to_hexarray(bytes);  //将数组进行转化
+  
+  if (bytes[0] == 1 )    
   {
    decoded.a_Payload_Type = "The 1st Payload for device information";
    decoded.b_battery_level = bytes[1] + '%';
@@ -78,366 +74,114 @@ function Decoder(bytes, port) {
     decoded.g_BLE_Connection_Status = (bytes[9]==0)?'Disconnected':'Connected';
     decoded.h_BLE_Connection_Times = (bytes[11]*256 + bytes[10]) + 'time';
   }
+
+
+
   else
   {
-    decoded.a1_Payload_Type = "The Payload for Beacon Data"
-    decoded.a2_Total_Beacons_Quantities = bytes[1];
+    decoded.a0_Payload_Type = "The Payload for Beacon Data"
+    decoded.a0_Total_Beacons_Quantities = bytes[1];
     if(bytes[1]>0)
     {
-      decoded.a3_1st_Beacon_data_length = bytes[2] + 'bytes';
-      decoded.a4_1st_Beacon_timestamp = (bytes[3]*256 + bytes[4])+ '/' + bytes[5] + '/' + bytes[6] + ' ' + bytes[7] + ':' + bytes[8] + ':' + bytes[9];
-      for(c=15;c>9;c--)
-      {
-       if(bytes[c]<16)
-       {      
-          if(c==15)
-          {
-           d = 0 +(bytes[c].toString(16)) + ' ';
-          }
-          else
-          {
-            d = d + 0 +(bytes[c].toString(16)) + ' ';
-          }
-       }
-       else
-       {
-        if(c==15)
-          {
-            d = (bytes[c].toString(16)) + ' ';
-          }
-         else
-          {
-            d = d + (bytes[c].toString(16)) + ' ';
-
-          }
-       }
-      }
-      decoded.a5_1st_Beacon_Mac_Address = d.toUpperCase();
-      decoded.a6_1st_Beacon_rssi = ( bytes[16] -256 )+ 'dBm';
-      if(bytes[17]<16)
-      {
-        
-        a = 0 +(bytes[17].toString(16)) + ' ';
-    
-      }
-      else
-      {
-        a = bytes[17].toString(16) + ' ';
-      }
-      for(c = 18;c< (bytes[2] + 3  );c++)
-      {
-          if(bytes[c]<16)
-          {      
-           a = a + 0 +(bytes[c].toString(16)) + ' ';
-          }
-          else
-          {
-            a = a + (bytes[c].toString(16)) + ' ';
-          }
-          decoded.a7_1st_Beacon_raw_data = a.toUpperCase();
-      }     
-     }
-     else
-     {
-          return decoded;  
-     }
-
+      decoded.a1_1st_Beacon_data_length = bytes[2] + 'bytes';
+      decoded.a2_1st_Beacon_timestamp = (bytes[3]*256 + bytes[4])+ '/' + bytes[5] + '/' + bytes[6] + ' ' + bytes[7] + ':' + bytes[8] + ':' + bytes[9];
+      decoded.a3_1st_Beacon_Mac_Address = little_endian_array_to_hex(10,15,array);
+      decoded.a4_1st_Beacon_rssi = ( bytes[16] -256 )+ 'dBm';
+      decoded.a5_1st_Beacon_raw_data = big_endian_array_to_hex(17,(bytes[2]+2),array)
+    }
     if(bytes[1] > 1)
-    {
-     
+    {     
       b = bytes[2] + 3;
       decoded.b1_2nd_Beacon_data_length = bytes[b] + 'bytes';
       decoded.b2_2nd_Beacon_timestamp = (bytes[b + 1]*256 + bytes[b +2])+ '/' + bytes[b + 3] + '/' + bytes[b +4] + ' ' + bytes[b + 5] + ':' + bytes[b + 6] + ':' + bytes[b + 7];
-      for(c=(b + 13);c>(b + 7);c--)
-      {
-       if(bytes[c]<16)
-       {      
-          if(c==(b + 13))
-          {
-           d = 0 +(bytes[c].toString(16)) + ' ';
-          }
-          else
-          {
-            d = d + 0 +(bytes[c].toString(16)) + ' ';
-          }
-       }
-       else
-       {
-        if(c==(b + 13))
-          {
-            d = (bytes[c].toString(16)) + ' ';
-          }
-         else
-          {
-            d = d + (bytes[c].toString(16)) + ' ';
-
-          }
-       }
-      }
-      decoded.b3_2nd_Beacon_Mac_Address = d.toUpperCase();
+      decoded.b3_2nd_Beacon_Mac_Address = little_endian_array_to_hex((b+8),(b+13),array);
       decoded.b4_2nd_Beacon_rssi = ( bytes[b + 14] -256 )+ 'dBm';
-      if(bytes[b +15]<16)
-      {
-       
-        a = 0 +(bytes[b+15].toString(16)) + ' ';
-    
-      }
-      else
-      {
-        
-        a = bytes[b+15].toString(16) + ' ';
-      }
-      for(c = (b + 16);c<(b + (bytes[b])+1);c++)
-      {
-          if(bytes[c]<16)
-          {      
-           a = a + 0 +(bytes[c].toString(16)) + ' ';
-          }
-          else
-          {
-            a = a + (bytes[c].toString(16)) + ' ';
-          }
-          decoded.b5_2nd_Beacon_raw_data = a.toUpperCase();
-      }     
-     }
-     
+      decoded.b5_2nd_Beacon_raw_data = big_endian_array_to_hex((b+15),(b+(bytes[b])),array);
+    }
     if(bytes[1] > 2)
     {
-     
-      e = b + (bytes[b]) + 1;
-      decoded.c1_3rd_Beacon_data_length = bytes[e] + 'bytes';
-      decoded.c2_3rd_Beacon_timestamp = (bytes[e + 1]*256 + bytes[e +2])+ '/' + bytes[e + 3] + '/' + bytes[e +4] + ' ' + bytes[e + 5] + ':' + bytes[e + 6] + ':' + bytes[e + 7];
-      for(c=(e + 13);c>(e + 7);c--)
-      {
-       if(bytes[c]<16)
-       {      
-          if(c==(e + 13))
-          {
-           d = 0 +(bytes[c].toString(16)) + ' ';
-          }
-          else
-          {
-            d = d + 0 +(bytes[c].toString(16)) + ' ';
-          }
-       }
-       else
-       {
-        if(c==(e + 13))
-          {
-            d = (bytes[c].toString(16)) + ' ';
-          }
-         else
-          {
-            d = d + (bytes[c].toString(16)) + ' ';
-
-          }
-       }
-      }
-      decoded.c3_3rd_Beacon_Mac_Address = d.toUpperCase();
-      decoded.c4_3rd_Beacon_rssi = ( bytes[e + 14] -256 )+ 'dBm';
-      if(bytes[e +15]<16)
-      {
-        
-        a = 0 +(bytes[e+15].toString(16)) + ' ';
-    
-      }
-      else
-      {
-      
-        a = bytes[e+15].toString(16) + ' ';
-      }
-      for(c = (e + 16);c<(e + (bytes[e])+1);c++)
-      {
-          if(bytes[c]<16)
-          {      
-           a = a + 0 +(bytes[c].toString(16)) + ' ';
-          }
-          else
-          {
-            a = a + (bytes[c].toString(16)) + ' ';
-          }
-          decoded.c5_3rd_Beacon_raw_data = a.toUpperCase();
-      }     
-     }
-
-     if(bytes[1] > 3)
+      b= b + (bytes[b]) + 1;
+      decoded.c1_3rd_Beacon_data_length = bytes[b] + 'bytes';
+      decoded.c2_3rd_Beacon_timestamp = (bytes[b + 1]*256 + bytes[b +2])+ '/' + bytes[b + 3] + '/' + bytes[b +4] + ' ' + bytes[b + 5] + ':' + bytes[b + 6] + ':' + bytes[b + 7];
+      decoded.c3_3rd_Beacon_Mac_Address = little_endian_array_to_hex((b+8),(b+13),array);
+      decoded.c4_3rd_Beacon_rssi = ( bytes[b + 14] -256 )+ 'dBm';
+      decoded.c5_3rd_Beacon_raw_data = big_endian_array_to_hex((b+15),(b+(bytes[b])),array);
+    }
+    if(bytes[1] > 3)
     {
-     
-      f = e + (bytes[e]) + 1;
-      decoded.d1_4th_Beacon_data_length = bytes[f] + 'bytes';
-      decoded.d2_4th_Beacon_timestamp = (bytes[f + 1]*256 + bytes[f +2])+ '/' + bytes[f + 3] + '/' + bytes[f +4] + ' ' + bytes[f + 5] + ':' + bytes[f + 6] + ':' + bytes[f + 7];
-      for(c=(f + 13);c>(f + 7);c--)
-      {
-       if(bytes[c]<16)
-       {      
-          if(c==(f + 13))
-          {
-           d = 0 +(bytes[c].toString(16)) + ' ';
-          }
-          else
-          {
-            d = d + 0 +(bytes[c].toString(16)) + ' ';
-          }
-       }
-       else
-       {
-        if(c==(f + 13))
-          {
-            d = (bytes[c].toString(16)) + ' ';
-          }
-         else
-          {
-            d = d + (bytes[c].toString(16)) + ' ';
-
-          }
-       }
-      }
-      decoded.d3_4th_Beacon_Mac_Address = d.toUpperCase();
-      decoded.d4_4th_Beacon_rssi = ( bytes[f + 14] -256 )+ 'dBm';
-      if(bytes[f +15]<16)
-      {
-        
-        a = 0 +(bytes[f+15].toString(16)) + ' ';
-    
-      }
-      else
-      {
-      
-        a = bytes[f+15].toString(16) + ' ';
-      }
-      for(c = (f + 16);c<(f + (bytes[f])+1);c++)
-      {
-          if(bytes[c]<16)
-          {      
-           a = a + 0 +(bytes[c].toString(16)) + ' ';
-          }
-          else
-          {
-            a = a + (bytes[c].toString(16)) + ' ';
-          }
-          decoded.d5_4th_Beacon_raw_data = a.toUpperCase();
-      }     
-     }
-     if(bytes[1] > 4)
-     {
-      
-       g = f + (bytes[f]) + 1;
-       decoded.e1_5th_Beacon_data_length = bytes[g] + 'bytes';
-       decoded.e2_5th_Beacon_timestamp = (bytes[g + 1]*256 + bytes[g +2])+ '/' + bytes[g + 3] + '/' + bytes[g +4] + ' ' + bytes[g + 5] + ':' + bytes[g + 6] + ':' + bytes[g + 7];
-       for(c=(g + 13);c>(g + 7);c--)
-       {
-        if(bytes[c]<16)
-        {      
-           if(c==(g + 13))
-           {
-            d = 0 +(bytes[c].toString(16)) + ' ';
-           }
-           else
-           {
-             d = d + 0 +(bytes[c].toString(16)) + ' ';
-           }
-        }
-        else
-        {
-         if(c==(g + 13))
-           {
-             d = (bytes[c].toString(16)) + ' ';
-           }
-          else
-           {
-             d = d + (bytes[c].toString(16)) + ' ';
- 
-           }
-        }
-       }
-       decoded.e3_5th_Beacon_Mac_Address = d.toUpperCase();
-       decoded.e4_5th_Beacon_rssi = ( bytes[g + 14] -256 )+ 'dBm';
-       if(bytes[g +15]<16)
-       {
-         
-         a = 0 +(bytes[g+15].toString(16)) + ' ';
-     
-       }
-       else
-       {
-       
-         a = bytes[g+15].toString(16) + ' ';
-       }
-       for(c = (g + 16);c<(g + (bytes[g])+1);c++)
-       {
-           if(bytes[c]<16)
-           {      
-            a = a + 0 +(bytes[c].toString(16)) + ' ';
-           }
-           else
-           {
-             a = a + (bytes[c].toString(16)) + ' ';
-           }
-           decoded.e5_5th_Beacon_raw_data = a.toUpperCase();
-       }     
-      }
-      if(bytes[1] > 5)
-     {
-      
-       h = g + (bytes[g]) + 1;
-       decoded.f1_6th_Beacon_data_length = bytes[h] + 'bytes';
-       decoded.f2_6th_Beacon_timestamp = (bytes[h + 1]*256 + bytes[h +2])+ '/' + bytes[h + 3] + '/' + bytes[h +4] + ' ' + bytes[h + 5] + ':' + bytes[h + 6] + ':' + bytes[h + 7];
-       for(c=(h + 13);c>(h + 7);c--)
-       {
-        if(bytes[c]<16)
-        {      
-           if(c==(h + 13))
-           {
-            d = 0 +(bytes[c].toString(16)) + ' ';
-           }
-           else
-           {
-             d = d + 0 +(bytes[c].toString(16)) + ' ';
-           }
-        }
-        else
-        {
-         if(c==(h + 13))
-           {
-             d = (bytes[c].toString(16)) + ' ';
-           }
-          else
-           {
-             d = d + (bytes[c].toString(16)) + ' ';
- 
-           }
-        }
-       }
-       decoded.f3_6th_Beacon_Mac_Address = d.toUpperCase();
-       decoded.f4_6th_Beacon_rssi = ( bytes[h + 14] -256 )+ 'dBm';
-       if(bytes[h +15]<16)
-       {
-         
-         a = 0 +(bytes[h+15].toString(16)) + ' ';
-     
-       }
-       else
-       {
-       
-         a = bytes[h+15].toString(16) + ' ';
-       }
-       for(c = (h + 16);c<(h + (bytes[h])+1);c++)
-       {
-           if(bytes[c]<16)
-           {      
-            a = a + 0 +(bytes[c].toString(16)) + ' ';
-           }
-           else
-           {
-             a = a + (bytes[c].toString(16)) + ' ';
-           }
-           decoded.f5_6th_Beacon_raw_data = a.toUpperCase();
-       }     
-      }
-     else
-     {
-          return decoded;
-     } 
-}
+      b= b + (bytes[b]) + 1;
+      decoded.d1_4th_Beacon_data_length = bytes[b] + 'bytes';
+      decoded.d2_4th_Beacon_timestamp = (bytes[b + 1]*256 + bytes[b +2])+ '/' + bytes[b + 3] + '/' + bytes[b +4] + ' ' + bytes[b + 5] + ':' + bytes[b + 6] + ':' + bytes[b + 7];
+      decoded.d3_4th_Beacon_Mac_Address = little_endian_array_to_hex((b+8),(b+13),array);
+      decoded.d4_4th_Beacon_rssi = ( bytes[b + 14] -256 )+ 'dBm';
+      decoded.d5_4th_Beacon_raw_data = big_endian_array_to_hex((b+15),(b+(bytes[b])),array);
+    }
+    if(bytes[1] > 4)
+    {
+      b= b + (bytes[b]) + 1;
+      decoded.e1_5th_Beacon_data_length = bytes[b] + 'bytes';
+      decoded.e2_5th_Beacon_timestamp = (bytes[b + 1]*256 + bytes[b +2])+ '/' + bytes[b + 3] + '/' + bytes[b +4] + ' ' + bytes[b + 5] + ':' + bytes[b + 6] + ':' + bytes[b + 7];
+      decoded.e3_5th_Beacon_Mac_Address = little_endian_array_to_hex((b+8),(b+13),array);
+      decoded.e4_5th_Beacon_rssi = ( bytes[b + 14] -256 )+ 'dBm';
+      decoded.e5_5th_Beacon_raw_data = big_endian_array_to_hex((b+15),(b+(bytes[b])),array);
+    }
+    if(bytes[1] > 5)
+    {
+      b= b + (bytes[b]) + 1;
+      decoded.f1_6th_Beacon_data_length = bytes[b] + 'bytes';
+      decoded.f2_6th_Beacon_timestamp = (bytes[b + 1]*256 + bytes[b +2])+ '/' + bytes[b + 3] + '/' + bytes[b +4] + ' ' + bytes[b + 5] + ':' + bytes[b + 6] + ':' + bytes[b + 7];
+      decoded.f3_6th_Beacon_Mac_Address = little_endian_array_to_hex((b+8),(b+13),array);
+      decoded.f4_6th_Beacon_rssi = ( bytes[b + 14] -256 )+ 'dBm';
+      decoded.f5_6th_Beacon_raw_data = big_endian_array_to_hex((b+15),(b+(bytes[b])),array);
+    }
+    if(bytes[1] > 6)
+    {
+      b= b + (bytes[b]) + 1;
+      decoded.g1_7th_Beacon_data_length = bytes[b] + 'bytes';
+      decoded.g2_7th_Beacon_timestamp = (bytes[b + 1]*256 + bytes[b +2])+ '/' + bytes[b + 3] + '/' + bytes[b +4] + ' ' + bytes[b + 5] + ':' + bytes[b + 6] + ':' + bytes[b + 7];
+      decoded.g3_7th_Beacon_Mac_Address = little_endian_array_to_hex((b+8),(b+13),array);
+      decoded.g4_7th_Beacon_rssi = ( bytes[b + 14] -256 )+ 'dBm';
+      decoded.g5_7th_Beacon_raw_data = big_endian_array_to_hex((b+15),(b+(bytes[b])),array);
+    } 
+  }
   return decoded;
 }
+
+function big_endian_array_to_hex(start_point,end_point,array){
+  var c;
+  var d = '';
+  for(c = start_point;c <= end_point;c++)
+   {
+       d = d + array[c] + ' ';
+   }
+   return d;
+  }
+  
+function little_endian_array_to_hex(start_point,end_point,array){
+    var c;
+    var d = '';
+    for(c = end_point; c >= start_point;c--)
+     {
+         d = d + array[c] + ' ';
+     }
+     return d;
+    }
+  
+function base64_to_hexarray(bytes) {
+    var a = bytes.length; //取payload的长度
+    var bytesarray = [];  //定义一个新的数组变量
+    for(b =0; b < a;b++)   //将bytes中的值挨个取到新的数组变量中
+    {
+      if(bytes[b]<16)
+      {
+        bytesarray[b] = (0 + (bytes[b].toString(16))).toUpperCase(); //base64取值时，若值为0X，则0 会被省略掉，所以判断下数字若为小于16，则需加0
+      }
+      else
+      { 
+        bytesarray[b] = bytes[b].toString(16).toUpperCase();
+      }
+    }
+    return bytesarray;  //返回新数组
+}
+    
+  
