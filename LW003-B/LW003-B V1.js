@@ -8,7 +8,7 @@ function Decoder(bytes, port) {
   var decoded = {};
   var array;
   var b;
-  array = base64_to_hexarray(bytes);  //将数组进行转化
+  array = base64_to_hexarray(bytes);  
   
   if (bytes[0] == 1 )    
   {
@@ -168,9 +168,9 @@ function little_endian_array_to_hex(start_point,end_point,array){
     }
   
 function base64_to_hexarray(bytes) {
-    var a = bytes.length; //取payload的长度
-    var bytesarray = [];  //定义一个新的数组变量
-    for(b =0; b < a;b++)   //将bytes中的值挨个取到新的数组变量中
+    var a = bytes.length; 
+    var bytesarray = []; 
+    for(b =0; b < a;b++)  
     {
       if(bytes[b]<16)
       {
