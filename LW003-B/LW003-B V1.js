@@ -174,14 +174,14 @@ function base64_to_hexarray(bytes) {
     {
       if(bytes[b]<16)
       {
-        bytesarray[b] = (0 + (bytes[b].toString(16))).toUpperCase(); //base64取值时，若值为0X，则0 会被省略掉，所以判断下数字若为小于16，则需加0
+        bytesarray[b] = (0 + (bytes[b].toString(16))).toUpperCase(); 
       }
       else
       { 
         bytesarray[b] = bytes[b].toString(16).toUpperCase();
       }
     }
-    return bytesarray;  //返回新数组
+    return bytesarray; 
 }
     
   
