@@ -1,7 +1,7 @@
 //LW004-PB Payload Decoder rule
 //Creation time：2021-01-27 
 //Creator：Allen Zhang
-//Suitable firmware versions：LW004-PB V1.0.11 
+//Suitable firmware versions：LW004-PB V2.2.3 
 //Programming languages：Javascript
 //Suitable platforms：TTN
 
